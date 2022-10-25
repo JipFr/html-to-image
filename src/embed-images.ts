@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { Options } from './types'
 import { embedResources } from './embed-resources'
 import { toArray } from './util'
@@ -40,47 +39,16 @@ async function embedImageNode<T extends HTMLElement | SVGImageElement>(
       : clonedNode.href.baseVal
 
   const dataURL = await resourceToDataURL(url, getMimeType(url), options)
-
-  await new Promise((resolve, reject): void => {
+  await new Promise((resolve, reject) => {
+    clonedNode.decode = resolve
+    clonedNode.onerror = reject
     if (clonedNode instanceof HTMLImageElement) {
       clonedNode.srcset = ''
       clonedNode.src = dataURL
-      clonedNode.addEventListener('load', () => {
-        tryDecode(clonedNode, resolve, reject)
-      })
     } else {
       clonedNode.href.baseVal = dataURL
-      clonedNode.onload = () => resolve(clonedNode)
     }
-    clonedNode.onerror = reject
   })
-}
-
-function tryDecode(
-  clonedNode: HTMLImageElement,
-  resolve: (clonedNode: HTMLImageElement) => void,
-  reject: () => void,
-  retryCount = 0,
-) {
-  clonedNode
-    .decode()
-    .then(() => {
-      console.log('Decoded')
-      resolve(clonedNode)
-    })
-    .catch(() => {
-      // console.error('Failed to decode', url, getMimeType(url), clonedNode)
-      setTimeout(() => {
-        if (retryCount < 5) {
-          console.log('Retrying')
-          tryDecode(clonedNode, resolve, reject, retryCount + 1)
-        } else {
-          console.log('Rejected!')
-          reject()
-        }
-      }, 1000)
-      // reject()
-    })
 }
 
 async function embedChildren<T extends HTMLElement>(
@@ -88,19 +56,7 @@ async function embedChildren<T extends HTMLElement>(
   options: Options,
 ) {
   const children = toArray<HTMLElement>(clonedNode.childNodes)
-  // const deferreds = []
   const deferreds = children.map((child) => embedImages(child, options))
-  // console.log(
-  //   i,
-  //   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //   // @ts-ignore
-  //   children.map((t) => t.src),
-  // )
-  // // eslint-disable-next-line no-restricted-syntax
-  // for (const child of children) {
-  //   // eslint-disable-next-line no-await-in-loop
-  //   deferreds.push(await embedImages(child, options))
-  // }
   await Promise.all(deferreds).then(() => clonedNode)
 }
 

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Options } from './types'
 
 function getContentFromDataUrl(dataURL: string) {
@@ -94,6 +95,7 @@ export async function resourceToDataURL(
     )
     dataURL = makeDataUrl(content, contentType!)
   } catch (error) {
+    console.error('FAILUIRE')
     dataURL = options.imagePlaceholder || ''
 
     let msg = `Failed to fetch resource: ${resourceUrl}`

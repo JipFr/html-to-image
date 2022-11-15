@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Options } from './types'
 import { cloneNode } from './clone-node'
 import { embedImages } from './embed-images'
@@ -29,6 +30,7 @@ export async function toCanvas<T extends HTMLElement>(
   node: T,
   options: Options = {},
 ): Promise<HTMLCanvasElement> {
+  console.log(0)
   const { width, height } = getImageSize(node, options)
   const svg = await toSvg(node, options)
   const img = await createImage(svg)
@@ -51,6 +53,19 @@ export async function toCanvas<T extends HTMLElement>(
   if (options.backgroundColor) {
     context.fillStyle = options.backgroundColor
     context.fillRect(0, 0, canvas.width, canvas.height)
+  }
+
+  context.drawImage(img, 0, 0, canvas.width, canvas.height)
+
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+  if (isSafari) {
+    // Add manual delay for Safari, since it seems Safari fires the "load" event (and img.decode() as well) before the image is properly loaded. Sigh.
+    // This doesn't work 100% of the time, but I don't know how else I can do it.
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(true)
+      }, 5e3)
+    })
   }
 
   context.drawImage(img, 0, 0, canvas.width, canvas.height)

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import type { Options } from './types'
 
 export function resolveUrl(url: string, baseUrl: string | null): string {
@@ -181,12 +182,9 @@ export function canvasToBlob(
 }
 
 export function createImage(url: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const img = new Image()
     img.onload = () => resolve(img)
-    img.onerror = reject
-    img.crossOrigin = 'anonymous'
-    img.decoding = 'sync'
     img.src = url
   })
 }

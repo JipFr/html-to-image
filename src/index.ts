@@ -26,11 +26,19 @@ export async function toSvg<T extends HTMLElement>(
   return datauri
 }
 
+export async function getImage<T extends HTMLElement>(
+  node: T,
+  options: Options,
+) {
+  const svg = await toSvg(node, options)
+  const img = await createImage(svg)
+  return img
+}
+
 export async function toCanvas<T extends HTMLElement>(
   node: T,
   options: Options = {},
 ): Promise<HTMLCanvasElement> {
-  console.log(0)
   const { width, height } = getImageSize(node, options)
   const svg = await toSvg(node, options)
   const img = await createImage(svg)
@@ -81,6 +89,13 @@ export async function toPixelData<T extends HTMLElement>(
   const canvas = await toCanvas(node, options)
   const ctx = canvas.getContext('2d')!
   return ctx.getImageData(0, 0, width, height).data
+}
+
+export async function getImg<T extends HTMLElement>(
+  node: T,
+  options: Options = {},
+): Promise<HTMLImageElement> {
+  return getImage(node, options)
 }
 
 export async function toPng<T extends HTMLElement>(
